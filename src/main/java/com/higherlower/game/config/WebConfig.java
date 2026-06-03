@@ -32,7 +32,7 @@ public class WebConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Origins — lock this down in production
-        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOriginPatterns(List.of("https://search-wars.vercel.app"));
 
         // Standard REST methods
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
@@ -55,3 +55,4 @@ public class WebConfig {
         return new CorsFilter(source);
     }
 }
+
