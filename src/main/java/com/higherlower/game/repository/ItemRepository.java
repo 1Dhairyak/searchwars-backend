@@ -41,7 +41,7 @@ public interface ItemRepository extends JpaRepository<Item, String> {
         SELECT i FROM Item i
         WHERE i.active = true
           AND i.id NOT IN :excludedIds
-        ORDER BY FUNCTION('random', )
+        ORDER BY FUNCTION('random')
         LIMIT 1
         """)
     Optional<Item> findRandomActiveItemExcluding(@Param("excludedIds") List<String> excludedIds);
@@ -53,7 +53,7 @@ public interface ItemRepository extends JpaRepository<Item, String> {
     @Query("""
         SELECT i FROM Item i
         WHERE i.active = true
-        ORDER BY FUNCTION('random', )
+        ORDER BY FUNCTION('random')
         LIMIT 1
         """)
     Optional<Item> findRandomActiveItem();
@@ -77,3 +77,4 @@ public interface ItemRepository extends JpaRepository<Item, String> {
      */
     List<Item> findByCategoryAndActiveTrueOrderByTitleAsc(String category);
 }
+
