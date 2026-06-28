@@ -97,24 +97,3 @@ When both items have identical search volumes, a `HIGHER` guess is treated as **
 
 ---
 
-## Running Tests
-
-```bash
-# Unit + controller slice tests (uses H2 in-memory)
-mvn test
-
-# With coverage report
-mvn test jacoco:report
-```
-
----
-
-## Production Checklist
-
-- [ ] Set `spring.jpa.hibernate.ddl-auto=validate` and use Flyway/Liquibase
-- [ ] Replace `spring.cache.type=simple` with Redis (`spring-boot-starter-data-redis`)
-- [ ] Lock down CORS `allowedOriginPatterns` to your domain
-- [ ] Set `SPRING_DATASOURCE_PASSWORD` via secrets manager (not properties file)
-- [ ] Enable Spring Security with JWT for authenticated leaderboard submission
-- [ ] Add rate limiting (Bucket4j or API Gateway) on `/api/game/guess`
-- [ ] Schedule `abandonStaleSessionsBefore()` cleanup via `@Scheduled`
