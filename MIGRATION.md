@@ -1,0 +1,17 @@
+﻿# Migration Log - Railway to AWS
+
+## Phase 1: Railway (Trial)
+- Backend deployed on Railway free trial (1 month).
+- Stack: Spring Boot + PostgreSQL.
+- Trial expired, service went cold, frontend broke.
+
+## Phase 2: AWS Migration (Free Tier)
+- Moving to AWS Elastic Beanstalk + RDS (Postgres).
+- Steps: dump DB, provision EB, provision RDS, restore DB, deploy JAR, repoint frontend, kill Railway.
+
+## Status
+- [x] Railway deployment (deprecated)
+- [ ] AWS EB + RDS setup
+- [ ] Data migration
+- [ ] Frontend repoint
+- [ ] Railway teardown
