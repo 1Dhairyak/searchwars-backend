@@ -32,7 +32,7 @@ public class WebConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Origins — lock this down in production
-        config.setAllowedOriginPatterns(List.of("https://search-wars.vercel.app", "http://localhost:5173"));
+        config.setAllowedOriginPatterns(List.of("https://search-wars.vercel.app", "https://search-wars-*.vercel.app", "http://localhost:5173"));
 
         // Standard REST methods
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
@@ -50,7 +50,7 @@ public class WebConfig {
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
+        source.registerCorsConfiguration("/**", config);
 
         return new CorsFilter(source);
     }

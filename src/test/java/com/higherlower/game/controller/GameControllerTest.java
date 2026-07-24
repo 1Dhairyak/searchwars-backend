@@ -1,6 +1,8 @@
 package com.higherlower.game.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.higherlower.game.config.SecurityConfig;
+import com.higherlower.game.config.OptionalJwtFilter;
 import com.higherlower.game.dto.request.GuessRequest;
 import com.higherlower.game.dto.request.StartGameRequest;
 import com.higherlower.game.dto.response.GameRoundDto;
@@ -10,6 +12,7 @@ import com.higherlower.game.entity.enums.GuessType;
 import com.higherlower.game.exception.GameSessionNotFoundException;
 import com.higherlower.game.exception.GlobalExceptionHandler;
 import com.higherlower.game.service.GameService;
+import com.higherlower.game.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Only the web layer is loaded — service is mocked.
  */
 @WebMvcTest(GameController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class, OptionalJwtFilter.class})
 @ActiveProfiles("test")
 class GameControllerTest {
 
@@ -38,6 +41,7 @@ class GameControllerTest {
     @Autowired ObjectMapper objectMapper;
 
     @MockBean GameService gameService;
+    @MockBean JwtUtil jwtUtil;
 
     // ── /api/game/start ───────────────────────────────────────────────────────
 
@@ -58,7 +62,7 @@ class GameControllerTest {
 
         given(gameService.startGame(any())).willReturn(round);
 
-        mockMvc.perform(get("/api/game/start")
+        mockMvc.perform(post("/api/game/start")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))

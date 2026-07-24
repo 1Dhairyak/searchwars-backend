@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
  * lives in {@link GameService}.</p>
  */
 @RestController
-@RequestMapping("/api/game")
+@RequestMapping({"/api/game", "/game"})
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*") // tighten to specific origins in production
