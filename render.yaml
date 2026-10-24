@@ -1,0 +1,20 @@
+# Render Blueprint: New -> Blueprint -> pick this repo.
+# Render asks for the DB_* values (from Neon) on first deploy.
+services:
+  - type: web
+    name: searchwars-backend
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        value: not-set-yet
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false

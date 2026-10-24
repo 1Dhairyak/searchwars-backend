@@ -16,6 +16,12 @@ Tables are created automatically on first boot and `DataSeeder` loads the game i
 
 ## 2. Backend — Render
 
+**Quick way:** [render.com](https://render.com) → **New → Blueprint** → pick this repo.
+`render.yaml` sets everything (Docker, Free, Frankfurt, health check, generated `JWT_SECRET`);
+Render only asks for `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
+
+**Manual way:**
+
 1. [render.com](https://render.com) → **New → Web Service** → connect this GitHub repo.
 2. Runtime: **Docker** (uses `Dockerfile`), plan: **Free**.
 3. Advanced → Health Check Path: `/actuator/health`.
