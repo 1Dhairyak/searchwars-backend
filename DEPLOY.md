@@ -1,88 +1,67 @@
 # SearchWars Backend — Deployment Guide
 
-Spring Boot 3 + PostgreSQL 15 | Deploy on Railway
+Spring Boot 3 + PostgreSQL | Render (free web service) + Neon (free Postgres)
 
 ---
 
-## Deploy to Railway (5 minutes)
+## 1. Database — Neon
 
-### Step 1 — Push this folder to a new GitHub repo
+1. Create a project at [neon.tech](https://neon.tech) (free plan).
+2. Dashboard → **Connect** → copy host, database, user, password.
+3. Build the JDBC URL:
+   ```
+   jdbc:postgresql://<host>/<database>?sslmode=require
+   ```
+Tables are created automatically on first boot and `DataSeeder` loads the game items.
 
-```bash
-cd higher-lower-game-backend
-git init
-git add .
-git commit -m "feat: initial backend"
-git remote add origin https://github.com/YOUR_USERNAME/searchwars-backend.git
-git push -u origin main
-```
+## 2. Backend — Render
 
-### Step 2 — Create Railway project
-
-1. Go to [railway.app](https://railway.app) and sign in with GitHub
-2. Click **New Project → Deploy from GitHub repo**
-3. Select your `searchwars-backend` repo
-4. Railway auto-detects the Dockerfile ✅
-
-### Step 3 — Add PostgreSQL database
-
-1. In your Railway project, click **+ New** → **Database** → **PostgreSQL**
-2. Railway auto-sets `DATABASE_URL` as an environment variable — no manual config needed ✅
-
-### Step 4 — Set environment variables
-
-In Railway → your backend service → **Variables**, add:
+1. [render.com](https://render.com) → **New → Web Service** → connect this GitHub repo.
+2. Runtime: **Docker** (uses `Dockerfile`), plan: **Free**.
+3. Advanced → Health Check Path: `/actuator/health`.
+4. Environment variables (all required — the app refuses to start without them):
 
 | Variable | Value |
 |---|---|
-| `SPRING_PROFILES_ACTIVE` | `prod` |
+| `DB_URL` | JDBC URL from step 1 |
+| `DB_USERNAME` | Neon user |
+| `DB_PASSWORD` | Neon password |
+| `JWT_SECRET` | random string, 32+ chars |
+| `GOOGLE_CLIENT_ID` | Google OAuth Web client ID |
 
-That's it. `DATABASE_URL` and `PORT` are injected automatically by Railway.
+Every push to `main` redeploys automatically.
 
-### Step 5 — Get your backend URL
+## 3. Frontend — Vercel
 
-After deploy succeeds (2-3 min), Railway gives you a URL like:
-```
-https://searchwars-backend-production.up.railway.app
-```
-
----
-
-## Connect Frontend (Vercel)
-
-1. Go to your Vercel project → **Settings → Environment Variables**
-2. Add:
+Vercel project → Settings → Environment Variables:
 
 | Variable | Value |
 |---|---|
-| `VITE_API_BASE_URL` | `https://YOUR-RAILWAY-URL.up.railway.app/api` |
+| `VITE_API_BASE_URL` | `https://<your-service>.onrender.com/api` |
 
-3. Redeploy the frontend on Vercel (Deployments → Redeploy)
+Then redeploy. CORS already allows `search-wars.vercel.app`, its preview URLs and `localhost:5173` (`WebConfig.java`).
 
----
+## 4. Keep it awake
 
-## Verify it's working
+Render free services sleep after 15 min idle (~30-60s cold start).
+Add a free [UptimeRobot](https://uptimerobot.com) HTTP monitor on
+`https://<your-service>.onrender.com/actuator/health`, every 10 minutes.
 
-Hit these URLs in your browser after deploy:
+## Verify
 
 ```
-GET  https://YOUR-RAILWAY-URL.up.railway.app/actuator/health
-GET  https://YOUR-RAILWAY-URL.up.railway.app/api/leaderboard
+GET https://<your-service>.onrender.com/actuator/health   -> {"status":"UP"}
+GET https://<your-service>.onrender.com/api/leaderboard
 ```
-
-Both should return JSON. Then open your Vercel frontend — game should load! 🎮
 
 ---
 
 ## Local development
 
+Requires Java 21+, Maven, PostgreSQL on `localhost:5432` with database `higher_lower_db` (user/password `postgres`/`postgres`, see `application.properties`).
+
 ```bash
-# Requires: Java 21, Maven, PostgreSQL running locally
-
-cp src/main/resources/application.properties src/main/resources/application-local.properties
-# Edit application-local.properties with your local DB credentials
-
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+mvn spring-boot:run
 ```
 
-API available at `http://localhost:8080`
+API at `http://localhost:8080`.

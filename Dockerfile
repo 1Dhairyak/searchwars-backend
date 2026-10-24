@@ -1,5 +1,13 @@
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /src
+COPY pom.xml .
+RUN mvn -q dependency:go-offline
+COPY src src
+RUN mvn -q -DskipTests package
+
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-COPY higher-lower-game-1.0.0.jar app.jar
+COPY --from=build /src/target/higher-lower-game-1.0.0.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "app.jar"]
+# Render free tier = 512MB RAM
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
