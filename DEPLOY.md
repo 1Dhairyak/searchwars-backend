@@ -7,7 +7,7 @@ Spring Boot 3 + PostgreSQL | Render (free web service) + Neon (free Postgres)
 ## 1. Database — Neon
 
 1. Create a project at [neon.tech](https://neon.tech) (free plan).
-2. Dashboard → **Connect** → copy host, database, user, password.
+2. Region **AWS Asia Pacific (Singapore)**, same as Render. Dashboard → **Connect**, connection pooling OFF → copy host, database, user, password.
 3. Build the JDBC URL:
    ```
    jdbc:postgresql://<host>/<database>?sslmode=require
@@ -17,7 +17,7 @@ Tables are created automatically on first boot and `DataSeeder` loads the game i
 ## 2. Backend — Render
 
 **Quick way:** [render.com](https://render.com) → **New → Blueprint** → pick this repo.
-`render.yaml` sets everything (Docker, Free, Ohio, health check, generated `JWT_SECRET`);
+`render.yaml` sets everything (Docker, Free, Singapore, health check, generated `JWT_SECRET`);
 Render only asks for `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
 
 **Manual way:**

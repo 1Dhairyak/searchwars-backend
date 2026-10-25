@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
  * </ul></p>
  */
 @RestController
-@RequestMapping({"/api/leaderboard", "/leaderboard"})
+@RequestMapping("/api/leaderboard")
 @RequiredArgsConstructor
 @Validated  // enables constraint validation on @RequestParam
 @Slf4j

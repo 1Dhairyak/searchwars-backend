@@ -20,11 +20,6 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, String> {
 
     /**
-     * Returns all active items, ordered by title for consistent pagination.
-     */
-    List<Item> findAllByActiveTrueOrderByTitleAsc();
-
-    /**
      * Selects one random active item that is NOT in the given exclusion list.
      *
      * <p>Used by the game engine to pick the next "right-hand" item while
@@ -63,18 +58,5 @@ public interface ItemRepository extends JpaRepository<Item, String> {
      * pool is large enough to start a game.
      */
     long countByActiveTrue();
-
-    /**
-     * Finds an active item by exact title (case-insensitive).
-     * Used during seed-data loading to prevent duplicate inserts.
-     */
-    @Query("SELECT i FROM Item i WHERE LOWER(i.title) = LOWER(:title) AND i.active = true")
-    Optional<Item> findByTitleIgnoreCase(@Param("title") String title);
-
-    /**
-     * Returns all active items in a given category.
-     * Allows future category-specific game rounds.
-     */
-    List<Item> findByCategoryAndActiveTrueOrderByTitleAsc(String category);
 }
 

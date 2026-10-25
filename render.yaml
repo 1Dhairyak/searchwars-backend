@@ -5,7 +5,7 @@ services:
     name: searchwars-backend
     runtime: docker
     plan: free
-    region: ohio  # same region as the Neon DB (AWS us-east-2)
+    region: singapore  # same region as the Neon DB (AWS ap-southeast-1)
     healthCheckPath: /actuator/health
     envVars:
       - key: JWT_SECRET
