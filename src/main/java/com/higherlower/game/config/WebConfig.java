@@ -27,12 +27,16 @@ public class WebConfig {
      * Registers a global CORS filter applied before any Spring Security
      * filter (if security is added later).
      */
+    /** Browser origins allowed to call the API — also used for the duel WebSocket. */
+    public static final List<String> ALLOWED_ORIGINS =
+        List.of("https://search-wars.vercel.app", "https://search-wars-*.vercel.app", "http://localhost:5173");
+
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
         // Origins — lock this down in production
-        config.setAllowedOriginPatterns(List.of("https://search-wars.vercel.app", "https://search-wars-*.vercel.app", "http://localhost:5173"));
+        config.setAllowedOriginPatterns(ALLOWED_ORIGINS);
 
         // Standard REST methods
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

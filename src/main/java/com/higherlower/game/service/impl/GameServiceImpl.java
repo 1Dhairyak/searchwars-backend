@@ -158,7 +158,7 @@ public class GameServiceImpl implements GameService {
 
         // ── 5. Evaluate the guess ─────────────────────────────────────────────
         // Ties (equal volume) count as HIGHER — better UX than losing on a tie.
-        boolean isCorrect = evaluateGuess(request.getGuess(), knownItem, challengeItem);
+        boolean isCorrect = request.getGuess().isCorrect(knownItem.getMonthlyViews(), challengeItem.getMonthlyViews());
 
         log.debug("Guess evaluation — known: {} ({}), challenge: {} ({}), guess: {}, correct: {}",
             knownItem.getTitle(), knownItem.getMonthlyViews(),
@@ -257,25 +257,6 @@ public class GameServiceImpl implements GameService {
     }
 
     // ── Private: Helpers ──────────────────────────────────────────────────────
-
-    /**
-     * Core guess evaluation logic.
-     *
-     * <p>Returns {@code true} when:
-     * <ul>
-     *   <li>{@code HIGHER} and challenge volume &ge; known volume (ties favour player)</li>
-     *   <li>{@code LOWER}  and challenge volume &lt; known volume</li>
-     * </ul></p>
-     */
-    private boolean evaluateGuess(GuessType guess, Item knownItem, Item challengeItem) {
-        long knownVol     = knownItem.getMonthlyViews();
-        long challengeVol = challengeItem.getMonthlyViews();
-
-        return switch (guess) {
-            case HIGHER -> challengeVol >= knownVol;   // ties: player-friendly
-            case LOWER  -> challengeVol < knownVol;
-        };
-    }
 
     /**
      * Assembles a {@link GameRoundDto} with the challenge item's volume hidden.

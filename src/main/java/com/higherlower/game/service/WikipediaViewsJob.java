@@ -50,7 +50,8 @@ public class WikipediaViewsJob {
 
     @Scheduled(cron = "${wiki.refresh.cron}", zone = "UTC")
     public void nightly() {
-        refresh();
+        // ~100 sequential HTTP calls: keep them off the shared scheduler thread (it also runs the duel ticks).
+        Thread.ofVirtual().name("wiki-views-nightly").start(this::refresh);
     }
 
     void refreshIfStale() {

@@ -15,5 +15,13 @@ package com.higherlower.game.entity.enums;
  */
 public enum GuessType {
     HIGHER,
-    LOWER
+    LOWER;
+
+    /** Whether this guess is right about {@code challenge} vs {@code known}. Shared by solo and duel. */
+    public boolean isCorrect(long known, long challenge) {
+        return switch (this) {
+            case HIGHER -> challenge >= known;   // ties: player-friendly
+            case LOWER  -> challenge < known;
+        };
+    }
 }

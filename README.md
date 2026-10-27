@@ -3,7 +3,7 @@
 [![CI](https://github.com/1Dhairyak/searchwars-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/1Dhairyak/searchwars-backend/actions/workflows/ci.yml)
 
 Spring Boot API for **[SearchWars](https://search-wars.vercel.app)**: two things side by side, guess which one got
-more English Wikipedia page views last month. One wrong guess ends your streak.
+more English Wikipedia page views last month. One wrong guess ends your streak — solo, or live against a friend.
 
 Frontend: [1Dhairyak/SearchWars](https://github.com/1Dhairyak/SearchWars) (React 19 + Vite on Vercel).
 
@@ -13,6 +13,7 @@ Frontend: [1Dhairyak/SearchWars](https://github.com/1Dhairyak/SearchWars) (React
 flowchart LR
     U[Player's browser] -->|React SPA| V[Vercel CDN]
     U -->|REST + JWT| R[Spring Boot API<br/>Render, Docker]
+    U <-->|WebSocket /ws/duel| R
     U -.->|Sign in with Google| G[Google Identity]
     R -->|verify ID token| G
     R -->|JPA + Flyway| N[(PostgreSQL<br/>Neon)]
@@ -26,6 +27,21 @@ flowchart LR
 **The server owns the game.** The browser never sees the hidden number before it guesses: `/game/start` returns the
 challenge item without `monthlyViews`, the session (seen items, score) lives in PostgreSQL, and `/game/guess` decides
 right or wrong. Scores — and the leaderboard and "best score" built from them — can't be faked from the client.
+
+**Real-time 1v1 duels over WebSockets.** A friend opens your invite link and you race through the *same* chain
+of items, with live scores. The server is authoritative here too:
+- [`Duel`](src/main/java/com/higherlower/game/duel/Duel.java) holds every rule as plain Java, unit-tested with a
+  fixed clock. Views are frozen when the duel is created, so both players get identical questions even if the
+  nightly refresh runs mid-match.
+- You're out on a wrong guess, after 15 s without guessing, or after 15 s disconnected. The duel ends the moment
+  the outcome is decided (opponent out and you're ahead), and a tie goes to whoever reached the score first.
+- Plain JSON over a raw WebSocket, no STOMP. After every change each player gets a complete personal `state`
+  (both scores, but only *their* round, with the hidden number withheld), so reconnecting is just joining again.
+  Identity travels in the first message, never the URL, so tokens stay out of access logs.
+- Duels live in memory: right for one Render instance. Several instances would need the state and the
+  fan-out in Redis (or sticky routing by duel code).
+- [`DuelSocketTest`](src/test/java/com/higherlower/game/duel/DuelSocketTest.java) plays a full match with two
+  real WebSocket clients against the running server.
 
 **Real data, refreshed automatically.** [`WikipediaViewsJob`](src/main/java/com/higherlower/game/service/WikipediaViewsJob.java)
 pulls last month's views for every item from the [Wikimedia Pageviews API](https://wikimedia.org/api/rest_v1/)
@@ -66,13 +82,14 @@ All game endpoints return `{ success, message, data }`.
 | `GET` | `/api/leaderboard?limit=10` | Top scores (cached, evicted on new entries) |
 | `POST` | `/api/players/name` | Claim a globally unique name (case-insensitive) for this device/account |
 | `GET` | `/api/players/best` | Signed-in user's best score across devices |
+| `POST` | `/api/duels` | Open a 1v1 duel → 6-character code; play it on `wss://…/ws/duel` |
 | `POST` | `/api/auth/register` · `/login` · `/google` | Returns a JWT; adopts the guest's games |
 
 Ties go to the player: guessing `HIGHER` on equal views counts as correct.
 
 ## Stack
 
-Java 21 · Spring Boot 3.3 (Web, Data JPA, Security, Validation, Cache, Actuator) · PostgreSQL 16 (Neon) · Flyway ·
+Java 21 · Spring Boot 3.3 (Web, WebSocket, Data JPA, Security, Validation, Cache, Actuator) · PostgreSQL 16 (Neon) · Flyway ·
 JJWT · Google API Client · JUnit 5, Mockito, MockMvc, MockRestServiceServer, H2 · Docker · GitHub Actions · Render
 
 ## Run locally
@@ -89,6 +106,7 @@ mvn verify               # tests (H2; Flyway builds the schema and Hibernate val
 ```
 src/main/java/com/higherlower/game/
   controller/   Game, Leaderboard, Player, Auth REST endpoints
+  duel/         real-time 1v1: Duel (rules), DuelService (registry, sweeps), DuelSocketHandler (/ws/duel)
   service/      game loop, leaderboard, player names, WikipediaViewsClient + WikipediaViewsJob
   repository/   Spring Data JPA (random item selection, best score, owner reassignment)
   entity/       Item, GameSession, LeaderboardEntry, PlayerName, User
