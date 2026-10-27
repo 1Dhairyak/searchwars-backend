@@ -5,20 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Optional request body for {@code GET /api/game/start}.
+ * Optional request body for {@code POST /api/game/start}.
  *
- * <p>The player may supply their name before the game begins so it
- * can be shown on the leaderboard. Supplying no body (or an empty
- * name) results in the session being logged as "Anonymous".</p>
+ * <p>The player's name is not sent here: the server uses the name the
+ * owner (JWT user, else guest token) has claimed, or a random one.</p>
  */
 @Data
 @NoArgsConstructor
 public class StartGameRequest {
 
-    /**
-     * Player display name — optional, max 100 chars.
-     * Whitespace-only names are normalised to "Anonymous" in the service.
-     */
-    @Size(max = 100, message = "Player name must not exceed 100 characters")
-    private String playerName;
+    /** Per-device secret from localStorage; identifies a guest owner. */
+    @Size(min = 16, max = 128, message = "Guest token must be 16-128 characters")
+    private String guestToken;
 }

@@ -39,9 +39,8 @@ public class GameController {
     /**
      * Starts a new game session.
      *
-     * <p>Accepts an optional JSON body with a {@code playerName}.
-     * The body is optional — a GET with no body is valid and results
-     * in an anonymous session.</p>
+     * <p>Accepts an optional JSON body with a {@code guestToken}. The player
+     * name comes from the owner's claimed name, or a random one.</p>
      *
      * <p>Sample response:
      * <pre>{@code
@@ -57,15 +56,14 @@ public class GameController {
      * }
      * }</pre></p>
      *
-     * @param request optional player name payload (may be null / empty body)
+     * @param request optional guest-token payload (may be null / empty body)
      * @return 200 OK with {@link GameRoundDto} wrapped in {@link ApiResponse}
      */
     @PostMapping("/start")
     public ResponseEntity<ApiResponse<GameRoundDto>> startGame(
             @RequestBody(required = false) @Valid StartGameRequest request) {
 
-        log.info("Received start-game request for player: {}",
-            request != null ? request.getPlayerName() : "Anonymous");
+        log.info("Received start-game request");
 
         GameRoundDto round = gameService.startGame(request);
 

@@ -4,6 +4,7 @@ import com.higherlower.game.dto.response.LeaderboardDto;
 import com.higherlower.game.entity.LeaderboardEntry;
 import com.higherlower.game.repository.LeaderboardRepository;
 import com.higherlower.game.service.LeaderboardService;
+import com.higherlower.game.util.IndianNames;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -97,7 +98,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         }
 
         String displayName = (playerName == null || playerName.isBlank())
-            ? "Anonymous"
+            ? IndianNames.random()
             : playerName.trim();
 
         LeaderboardEntry entry = LeaderboardEntry.builder()

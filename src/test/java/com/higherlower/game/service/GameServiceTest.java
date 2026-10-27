@@ -14,6 +14,7 @@ import com.higherlower.game.exception.InvalidGuessException;
 import com.higherlower.game.repository.GameSessionRepository;
 import com.higherlower.game.repository.ItemRepository;
 import com.higherlower.game.service.impl.GameServiceImpl;
+import com.higherlower.game.util.IndianNames;
 import com.higherlower.game.util.ItemMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,6 +44,7 @@ class GameServiceTest {
     @Mock ItemRepository       itemRepository;
     @Mock GameSessionRepository sessionRepository;
     @Mock LeaderboardService   leaderboardService;
+    @Mock PlayerNameService    playerNameService;
 
     @InjectMocks GameServiceImpl gameService;
 
@@ -109,7 +111,7 @@ class GameServiceTest {
             given(sessionRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
 
             StartGameRequest request = new StartGameRequest();
-            request.setPlayerName("Alice");
+            request.setGuestToken("alice-device-token-0001");
 
             GameRoundDto round = gameService.startGame(request);
 
@@ -123,19 +125,19 @@ class GameServiceTest {
         }
 
         @Test
-        @DisplayName("should use 'Anonymous' when no player name provided")
-        void shouldUseAnonymous_whenNoPlayerName() {
+        @DisplayName("should use a random Indian name when the owner has none")
+        void shouldUseRandomName_whenNoClaimedName() {
             given(itemRepository.countByActiveTrue()).willReturn(5L);
             given(itemRepository.findRandomActiveItem()).willReturn(Optional.of(knownItem));
             given(itemRepository.findRandomActiveItemExcluding(anyList()))
                 .willReturn(Optional.of(challengeItem));
             given(sessionRepository.save(any())).willAnswer(inv -> {
                 GameSession s = inv.getArgument(0);
-                assertThat(s.getPlayerName()).isEqualTo("Anonymous");
+                assertThat(s.getPlayerName()).isIn(IndianNames.NAMES);
                 return s;
             });
 
-            gameService.startGame(null);  // null request = anonymous
+            gameService.startGame(null);  // no guest token, no JWT
         }
 
         @Test

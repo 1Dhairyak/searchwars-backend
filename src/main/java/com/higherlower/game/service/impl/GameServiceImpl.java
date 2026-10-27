@@ -16,6 +16,8 @@ import com.higherlower.game.repository.GameSessionRepository;
 import com.higherlower.game.repository.ItemRepository;
 import com.higherlower.game.service.GameService;
 import com.higherlower.game.service.LeaderboardService;
+import com.higherlower.game.service.PlayerNameService;
+import com.higherlower.game.util.IndianNames;
 import com.higherlower.game.util.ItemMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,13 +40,11 @@ public class GameServiceImpl implements GameService {
     /** Minimum active items required to start a game. */
     private static final int MIN_ITEMS_REQUIRED = 2;
 
-    /** Fallback display name for sessions without a player name. */
-    private static final String ANONYMOUS = "Anonymous";
-
     private final ItemRepository       itemRepository;
     private final GameSessionRepository sessionRepository;
     private final LeaderboardService   leaderboardService;
     private final ItemMapper           itemMapper;
+    private final PlayerNameService    playerNameService;
 
     // ── Start Game ────────────────────────────────────────────────────────────
 
@@ -63,8 +63,7 @@ public class GameServiceImpl implements GameService {
     @Override
     @Transactional
     public GameRoundDto startGame(StartGameRequest request) {
-        log.info("Starting new game session for player: {}",
-            request != null ? request.getPlayerName() : ANONYMOUS);
+        log.info("Starting new game session");
 
         // ── 1. Guard: ensure enough items exist in the pool ──────────────────
         long activeCount = itemRepository.countByActiveTrue();
@@ -84,12 +83,15 @@ public class GameServiceImpl implements GameService {
             .orElseThrow(() -> new InsufficientItemsException(
                 "Failed to load a distinct challenge item"));
 
-        // ── 4. Resolve player name ────────────────────────────────────────────
-        String playerName = resolvePlayerName(request);
+        // ── 4. Resolve owner and player name ──────────────────────────────────
+        String ownerKey = PlayerNameService.currentOwner(
+            request != null ? request.getGuestToken() : null);
+        String playerName = playerNameService.nameOf(ownerKey).orElseGet(IndianNames::random);
 
         // ── 5. Persist the session ────────────────────────────────────────────
         GameSession session = GameSession.builder()
             .playerName(playerName)
+            .ownerKey(ownerKey)
             .currentItemId(knownItem.getId())
             .score(0)
             .status(GameStatus.ACTIVE)
@@ -303,17 +305,5 @@ public class GameServiceImpl implements GameService {
             .challengeItem(challengeDto)
             .currentScore(session.getScore())
             .build();
-    }
-
-    /**
-     * Resolves the player name from the request, normalising blanks
-     * and nulls to the "Anonymous" fallback.
-     */
-    private String resolvePlayerName(StartGameRequest request) {
-        if (request == null || request.getPlayerName() == null
-                || request.getPlayerName().isBlank()) {
-            return ANONYMOUS;
-        }
-        return request.getPlayerName().trim();
     }
 }

@@ -55,6 +55,13 @@ public class GameSession {
     @Column(name = "player_name", length = 100)
     private String playerName;
 
+    /**
+     * {@code u:<userId>} or {@code g:<sha256(guestToken)>}; null when the
+     * client sent neither. Lets the owner rename this session's leaderboard row.
+     */
+    @Column(name = "owner_key", length = 80)
+    private String ownerKey;
+
     /** The item whose search volume is currently revealed on the left. */
     @Column(name = "current_item_id")
     private String currentItemId;

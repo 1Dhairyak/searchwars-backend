@@ -48,8 +48,9 @@ public class LeaderboardEntry {
 
     /**
      * Player display name shown on the public leaderboard.
-     * Falls back to "Anonymous" if the session had no name.
+     * Mutable only so a player can rename their just-finished entry.
      */
+    @Setter
     @NotBlank(message = "Player name must not be blank")
     @Size(max = 100)
     @Column(name = "player_name", nullable = false, length = 100)

@@ -55,6 +55,13 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(NameTakenException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNameTaken(NameTakenException ex) {
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(InsufficientItemsException.class)
     public ResponseEntity<ApiResponse<Void>> handleInsufficientItems(
             InsufficientItemsException ex) {

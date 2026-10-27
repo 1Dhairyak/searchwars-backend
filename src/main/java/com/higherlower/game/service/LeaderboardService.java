@@ -23,7 +23,7 @@ public interface LeaderboardService {
      * is a no-op.</p>
      *
      * @param sessionId  the finished session UUID
-     * @param playerName display name (may be "Anonymous")
+     * @param playerName display name (blank gets a random name)
      * @param score      final score to record
      */
     void recordScore(String sessionId, String playerName, int score);

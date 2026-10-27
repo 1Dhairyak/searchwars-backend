@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 /**
  * Data access layer for {@link LeaderboardEntry} entities.
  *
@@ -36,4 +39,8 @@ public interface LeaderboardRepository extends JpaRepository<LeaderboardEntry, S
      * @param sessionId the game session UUID
      */
     boolean existsBySessionId(String sessionId);
+
+    Optional<LeaderboardEntry> findBySessionId(String sessionId);
+
+    List<LeaderboardEntry> findByPlayerName(String playerName);
 }
