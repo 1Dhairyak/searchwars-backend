@@ -91,7 +91,7 @@ public class AuthController {
         body.put("token", jwtUtil.generate(u.getId(), u.getEmail()));
         body.put("email", u.getEmail());
         body.put("displayName", u.getDisplayName());
-        body.put("playerName", playerNameService.adoptGuestName(u.getId(), guestToken).orElse(null));
+        body.put("playerName", playerNameService.adoptGuest(u.getId(), guestToken).orElse(null));
         return body;
     }
 }

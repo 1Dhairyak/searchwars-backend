@@ -33,7 +33,8 @@ import java.util.List;
     indexes = {
         @Index(name = "idx_session_status",    columnList = "status"),
         @Index(name = "idx_session_player",    columnList = "player_name"),
-        @Index(name = "idx_session_created_at",columnList = "created_at")
+        @Index(name = "idx_session_created_at",columnList = "created_at"),
+        @Index(name = "idx_session_owner",     columnList = "owner_key")
     }
 )
 @Getter

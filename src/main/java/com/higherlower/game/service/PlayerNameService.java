@@ -111,14 +111,22 @@ public class PlayerNameService {
         return displayName;
     }
 
-    /** Moves a guest's name to a user who has none yet (called after login). */
+    /**
+     * Called after login: moves this device's guest games to the user (so they
+     * count toward the user's best score), and the guest's name too if the user
+     * has none yet.
+     *
+     * @return the user's player name, if any
+     */
     @Transactional
-    public Optional<String> adoptGuestName(Long userId, String guestToken) {
+    public Optional<String> adoptGuest(Long userId, String guestToken) {
         String userKey = userOwner(userId);
+        String guestKey = guestOwner(guestToken);
+        if (guestKey != null) sessionRepository.reassignOwner(guestKey, userKey);
+
         Optional<PlayerName> own = playerNameRepository.findByOwnerKey(userKey);
         if (own.isPresent()) return own.map(PlayerName::getDisplayName);
 
-        String guestKey = guestOwner(guestToken);
         if (guestKey == null) return Optional.empty();
         return playerNameRepository.findByOwnerKey(guestKey).map(p -> {
             p.setOwnerKey(userKey);
