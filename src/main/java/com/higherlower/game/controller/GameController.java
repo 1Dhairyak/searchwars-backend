@@ -49,8 +49,8 @@ public class GameController {
      *   "message": "Game started successfully",
      *   "data": {
      *     "sessionId": "550e8400-...",
-     *     "knownItem":     { "id": "...", "title": "Budweiser", "searchVolume": 301000, ... },
-     *     "challengeItem": { "id": "...", "title": "Corn Flakes", "searchVolume": null,  ... },
+     *     "knownItem":     { "id": "...", "title": "Budweiser", "monthlyViews": 301000, ... },
+     *     "challengeItem": { "id": "...", "title": "Corn Flakes", "monthlyViews": null,  ... },
      *     "currentScore": 0
      *   }
      * }
@@ -94,9 +94,9 @@ public class GameController {
      *   "data": {
      *     "correct": true,
      *     "score": 1,
-     *     "revealedChallengeItem": { "title": "Corn Flakes", "searchVolume": 450000, ... },
+     *     "revealedChallengeItem": { "title": "Corn Flakes", "monthlyViews": 450000, ... },
      *     "nextRound": { ... },
-     *     "message": "Correct! Corn Flakes has 450,000 monthly searches. Score: 1",
+     *     "message": "Correct! Corn Flakes has 450,000 monthly Wikipedia views. Score: 1",
      *     "gameOver": false
      *   }
      * }

@@ -66,7 +66,7 @@ class GameServiceTest {
             .id("item-1")
             .title("Budweiser")
             .imageUrl("http://img/bud.jpg")
-            .searchVolume(301_000L)
+            .monthlyViews(301_000L)
             .category("Food & Drink")
             .active(true)
             .build();
@@ -75,7 +75,7 @@ class GameServiceTest {
             .id("item-2")
             .title("Corn Flakes")
             .imageUrl("http://img/corn.jpg")
-            .searchVolume(450_000L)
+            .monthlyViews(450_000L)
             .category("Food & Drink")
             .active(true)
             .build();
@@ -117,10 +117,10 @@ class GameServiceTest {
 
             assertThat(round).isNotNull();
             assertThat(round.getKnownItem().getTitle()).isEqualTo("Budweiser");
-            assertThat(round.getKnownItem().getSearchVolume()).isEqualTo(301_000L);
+            assertThat(round.getKnownItem().getMonthlyViews()).isEqualTo(301_000L);
             assertThat(round.getChallengeItem().getTitle()).isEqualTo("Corn Flakes");
             // Volume MUST be hidden for challenge item
-            assertThat(round.getChallengeItem().getSearchVolume()).isNull();
+            assertThat(round.getChallengeItem().getMonthlyViews()).isNull();
             assertThat(round.getCurrentScore()).isZero();
         }
 
@@ -176,7 +176,7 @@ class GameServiceTest {
             given(itemRepository.findById("item-1")).willReturn(Optional.of(knownItem));
             given(itemRepository.findById("item-2")).willReturn(Optional.of(challengeItem));
             // Next challenge item
-            Item nextItem = Item.builder().id("item-3").title("Nike").searchVolume(5_000_000L).active(true).build();
+            Item nextItem = Item.builder().id("item-3").title("Nike").monthlyViews(5_000_000L).active(true).build();
             given(itemRepository.findRandomActiveItemExcluding(anyList())).willReturn(Optional.of(nextItem));
             given(sessionRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
 
@@ -185,7 +185,7 @@ class GameServiceTest {
             assertThat(result.isCorrect()).isTrue();
             assertThat(result.isGameOver()).isFalse();
             assertThat(result.getScore()).isEqualTo(1);
-            assertThat(result.getRevealedChallengeItem().getSearchVolume()).isEqualTo(450_000L);
+            assertThat(result.getRevealedChallengeItem().getMonthlyViews()).isEqualTo(450_000L);
             assertThat(result.getNextRound()).isNotNull();
         }
 
@@ -213,7 +213,7 @@ class GameServiceTest {
         @DisplayName("Tie is treated as HIGHER correct (player-friendly)")
         void shouldCorrect_onTieWithHigherGuess() {
             Item tieItem = Item.builder()
-                .id("item-2").title("Tied Item").searchVolume(301_000L).active(true).build();
+                .id("item-2").title("Tied Item").monthlyViews(301_000L).active(true).build();
             activeSession.addSeenItemId("item-2");
 
             given(sessionRepository.findByIdAndStatus("session-1", GameStatus.ACTIVE))

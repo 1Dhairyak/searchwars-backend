@@ -16,7 +16,7 @@ public class ItemMapper {
 
     /**
      * Maps an {@link Item} entity to an {@link ItemDto} with all fields
-     * populated, including {@code searchVolume}.
+     * populated, including {@code monthlyViews}.
      *
      * <p>Use this for the "known" (left-hand) item where the volume is
      * already visible to the player, and for the reveal after a guess.</p>
@@ -32,7 +32,7 @@ public class ItemMapper {
             .id(item.getId())
             .title(item.getTitle())
             .imageUrl(item.getImageUrl())
-            .searchVolume(item.getSearchVolume())
+            .monthlyViews(item.getMonthlyViews())
             .category(item.getCategory())
             .build();
     }

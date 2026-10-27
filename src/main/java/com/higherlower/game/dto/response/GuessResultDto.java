@@ -7,7 +7,7 @@ import lombok.Value;
  * Returned by {@code POST /api/game/guess}.
  *
  * <p>Contains the outcome of the guess plus enough context for the
- * frontend to animate the reveal (show the hidden search volume)
+ * frontend to animate the reveal (show the hidden monthly views)
  * before transitioning to the next round or the game-over screen.</p>
  */
 @Value
@@ -21,7 +21,7 @@ public class GuessResultDto {
     Integer score;
 
     /**
-     * The challenge item now with its {@code searchVolume} revealed.
+     * The challenge item now with its {@code monthlyViews} revealed.
      * The UI uses this to animate the number counting up/down.
      */
     ItemDto revealedChallengeItem;
@@ -35,7 +35,7 @@ public class GuessResultDto {
 
     /**
      * Human-readable result message (e.g. "Correct! +1 point" or
-     * "Wrong! Corn Flakes has 450,000 monthly searches.").
+     * "Wrong! Corn Flakes has 450,000 monthly Wikipedia views.").
      * Keeps presentation logic server-side for easy A/B testing.
      */
     String message;

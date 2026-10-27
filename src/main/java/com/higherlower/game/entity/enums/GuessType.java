@@ -5,9 +5,9 @@ package com.higherlower.game.entity.enums;
  *
  * <ul>
  *   <li>{@code HIGHER} – The player believes the right-hand item has a
- *       <em>greater</em> monthly search volume than the left-hand item.</li>
+ *       <em>greater</em> monthly Wikipedia views than the left-hand item.</li>
  *   <li>{@code LOWER}  – The player believes the right-hand item has a
- *       <em>lesser</em> monthly search volume than the left-hand item.</li>
+ *       <em>lesser</em> monthly Wikipedia views than the left-hand item.</li>
  * </ul>
  *
  * <p>Ties (equal volumes) are treated as a {@code HIGHER} correct answer

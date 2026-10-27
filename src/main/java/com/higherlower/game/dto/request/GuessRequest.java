@@ -38,7 +38,7 @@ public class GuessRequest {
 
     /**
      * The player's guess: {@code HIGHER} if they believe the challenge item
-     * has more monthly searches than the known item, {@code LOWER} if fewer.
+     * has more monthly Wikipedia views than the known item, {@code LOWER} if fewer.
      */
     @NotNull(message = "Guess type is required (HIGHER or LOWER)")
     private GuessType guess;

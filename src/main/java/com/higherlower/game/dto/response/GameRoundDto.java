@@ -6,7 +6,7 @@ import lombok.Value;
 /**
  * Represents a single game round delivered to the player.
  *
- * <p>The "known" item is the left-hand card whose search volume IS revealed.
+ * <p>The "known" item is the left-hand card whose monthly views ARE revealed.
  * The "challenge" item is the right-hand card whose volume is hidden until
  * the player guesses.</p>
  *
@@ -25,7 +25,7 @@ public class GameRoundDto {
 
     /**
      * The left-hand item — volume is revealed.
-     * {@link ItemDto#getSearchVolume()} will be non-null here.
+     * {@link ItemDto#getMonthlyViews()} will be non-null here.
      */
     ItemDto knownItem;
 

@@ -22,7 +22,7 @@ import java.util.List;
  *       avoids a full join table for what is conceptually a transient list,
  *       keeping the schema simple. For very large histories a proper
  *       {@code @ElementCollection} table would be preferable.</li>
- *   <li>{@code currentItemId} is the "left-hand" item whose search volume is
+ *   <li>{@code currentItemId} is the "left-hand" item whose monthly views are
  *       revealed to the player; the right-hand item is fetched fresh on each
  *       request so its volume stays hidden until the guess is made.</li>
  * </ul></p>
@@ -63,7 +63,7 @@ public class GameSession {
     @Column(name = "owner_key", length = 80)
     private String ownerKey;
 
-    /** The item whose search volume is currently revealed on the left. */
+    /** The item whose monthly views are currently revealed on the left. */
     @Column(name = "current_item_id")
     private String currentItemId;
 

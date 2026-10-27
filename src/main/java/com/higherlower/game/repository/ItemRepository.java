@@ -58,5 +58,7 @@ public interface ItemRepository extends JpaRepository<Item, String> {
      * pool is large enough to start a game.
      */
     long countByActiveTrue();
+
+    List<Item> findByActiveTrue();
 }
 

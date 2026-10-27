@@ -7,7 +7,7 @@ import lombok.Value;
  * Read-only view of an {@link com.higherlower.game.entity.Item}
  * returned to the client.
  *
- * <p>Note: {@code searchVolume} is intentionally OMITTED when this
+ * <p>Note: {@code monthlyViews} is intentionally OMITTED when this
  * DTO represents the "right-hand" (challenge) item so the player
  * cannot inspect the response body to cheat. The game service sends
  * a separate {@link GameRoundDto} that hides the volume field
@@ -27,10 +27,10 @@ public class ItemDto {
     String imageUrl;
 
     /**
-     * Monthly search volume — only populated for the KNOWN (left) item.
+     * Monthly Wikipedia views — only populated for the KNOWN (left) item.
      * Will be {@code null} for the challenge item until the guess is resolved.
      */
-    Long searchVolume;
+    Long monthlyViews;
 
     /** Optional category label. */
     String category;

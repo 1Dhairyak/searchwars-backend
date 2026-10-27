@@ -38,7 +38,7 @@ public interface GameService {
      *   <li>Validates the session is still active.</li>
      *   <li>Validates the challenge item ID matches the session state
      *       (prevents stale/replayed requests).</li>
-     *   <li>Evaluates the guess against the actual search volumes.</li>
+     *   <li>Evaluates the guess against the actual monthly views.</li>
      *   <li>If correct: increments score, advances to the next round.</li>
      *   <li>If wrong: marks the session GAME_OVER, writes a leaderboard entry.</li>
      * </ol>

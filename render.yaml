@@ -7,6 +7,7 @@ services:
     plan: free
     region: singapore  # same region as the Neon DB (AWS ap-southeast-1)
     healthCheckPath: /actuator/health
+    autoDeployTrigger: checksPass  # deploy main only after GitHub Actions CI is green
     envVars:
       - key: JWT_SECRET
         generateValue: true

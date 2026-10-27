@@ -161,8 +161,8 @@ public class GameServiceImpl implements GameService {
         boolean isCorrect = evaluateGuess(request.getGuess(), knownItem, challengeItem);
 
         log.debug("Guess evaluation — known: {} ({}), challenge: {} ({}), guess: {}, correct: {}",
-            knownItem.getTitle(), knownItem.getSearchVolume(),
-            challengeItem.getTitle(), challengeItem.getSearchVolume(),
+            knownItem.getTitle(), knownItem.getMonthlyViews(),
+            challengeItem.getTitle(), challengeItem.getMonthlyViews(),
             request.getGuess(), isCorrect);
 
         if (isCorrect) {
@@ -202,9 +202,9 @@ public class GameServiceImpl implements GameService {
 
         sessionRepository.save(session);
 
-        String message = String.format("Correct! %s has %,d monthly searches. Score: %d",
+        String message = String.format("Correct! %s has %,d monthly Wikipedia views. Score: %d",
             challengeItem.getTitle(),
-            challengeItem.getSearchVolume(),
+            challengeItem.getMonthlyViews(),
             session.getScore());
 
         return GuessResultDto.builder()
@@ -235,13 +235,13 @@ public class GameServiceImpl implements GameService {
         );
 
         String message = String.format(
-            "Wrong! %s has %,d monthly searches — %s %s than %s's %,d. Game over!",
+            "Wrong! %s has %,d monthly Wikipedia views — %s %s than %s's %,d. Game over!",
             challengeItem.getTitle(),
-            challengeItem.getSearchVolume(),
+            challengeItem.getMonthlyViews(),
             challengeItem.getTitle(),
-            challengeItem.getSearchVolume() >= knownItem.getSearchVolume() ? "higher" : "lower",
+            challengeItem.getMonthlyViews() >= knownItem.getMonthlyViews() ? "higher" : "lower",
             knownItem.getTitle(),
-            knownItem.getSearchVolume()
+            knownItem.getMonthlyViews()
         );
 
         log.info("Game over for session [{}] — final score: {}", session.getId(), session.getScore());
@@ -268,8 +268,8 @@ public class GameServiceImpl implements GameService {
      * </ul></p>
      */
     private boolean evaluateGuess(GuessType guess, Item knownItem, Item challengeItem) {
-        long knownVol     = knownItem.getSearchVolume();
-        long challengeVol = challengeItem.getSearchVolume();
+        long knownVol     = knownItem.getMonthlyViews();
+        long challengeVol = challengeItem.getMonthlyViews();
 
         return switch (guess) {
             case HIGHER -> challengeVol >= knownVol;   // ties: player-friendly
@@ -280,14 +280,14 @@ public class GameServiceImpl implements GameService {
     /**
      * Assembles a {@link GameRoundDto} with the challenge item's volume hidden.
      *
-     * <p>The challenge item DTO deliberately has {@code searchVolume = null}
+     * <p>The challenge item DTO deliberately has {@code monthlyViews = null}
      * so that even if a client inspects the raw API response, the volume
      * is not leaked before the guess is submitted.</p>
      */
     private GameRoundDto buildRound(GameSession session,
                                     Item knownItem,
                                     Item challengeItem) {
-        // Known item — full DTO including search volume
+        // Known item — full DTO including monthly views
         ItemDto knownDto = itemMapper.toDto(knownItem);
 
         // Challenge item — volume HIDDEN (set to null)
@@ -296,7 +296,7 @@ public class GameServiceImpl implements GameService {
             .title(challengeItem.getTitle())
             .imageUrl(challengeItem.getImageUrl())
             .category(challengeItem.getCategory())
-            .searchVolume(null)           // deliberately omitted
+            .monthlyViews(null)           // deliberately omitted
             .build();
 
         return GameRoundDto.builder()

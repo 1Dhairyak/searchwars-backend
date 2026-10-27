@@ -49,9 +49,9 @@ class GameControllerTest {
     @DisplayName("GET /api/game/start returns 200 and GameRoundDto")
     void startGame_returns200_withRound() throws Exception {
         ItemDto known = ItemDto.builder()
-            .id("item-1").title("Budweiser").searchVolume(301_000L).build();
+            .id("item-1").title("Budweiser").monthlyViews(301_000L).build();
         ItemDto challenge = ItemDto.builder()
-            .id("item-2").title("Corn Flakes").searchVolume(null).build();
+            .id("item-2").title("Corn Flakes").monthlyViews(null).build();
 
         GameRoundDto round = GameRoundDto.builder()
             .sessionId("sess-1")
@@ -68,8 +68,8 @@ class GameControllerTest {
             .andExpect(jsonPath("$.success").value(true))
             .andExpect(jsonPath("$.data.sessionId").value("sess-1"))
             .andExpect(jsonPath("$.data.knownItem.title").value("Budweiser"))
-            .andExpect(jsonPath("$.data.knownItem.searchVolume").value(301000))
-            .andExpect(jsonPath("$.data.challengeItem.searchVolume").doesNotExist());
+            .andExpect(jsonPath("$.data.knownItem.monthlyViews").value(301000))
+            .andExpect(jsonPath("$.data.challengeItem.monthlyViews").doesNotExist());
     }
 
     // ── /api/game/guess ───────────────────────────────────────────────────────

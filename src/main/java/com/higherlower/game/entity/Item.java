@@ -11,15 +11,16 @@ import java.time.LocalDateTime;
 /**
  * Represents a comparable item in the Higher-or-Lower game.
  *
- * <p>Each Item has a monthly {@code searchVolume} (Google Trends–style number)
- * that players try to rank against each other. Items are grouped by
+ * <p>Each Item has {@code monthlyViews}: last month's English Wikipedia page
+ * views for its article, refreshed by {@code WikipediaViewsJob}. Players try to
+ * rank items against each other by it. Items are grouped by
  * {@code category} so the game engine can optionally restrict comparisons
  * to a single category for thematic rounds.</p>
  *
  * <p>Design notes:
  * <ul>
  *   <li>UUID primary key avoids sequential-ID enumeration attacks.</li>
- *   <li>{@code searchVolume} is stored as a plain long — no floating point
+ *   <li>{@code monthlyViews} is stored as a plain long — no floating point
  *       rounding issues when comparing.</li>
  *   <li>{@code active} flag lets admins soft-delete items without breaking
  *       historical leaderboard references.</li>
@@ -65,14 +66,18 @@ public class Item {
     private String imageUrl;
 
     /**
-     * Average monthly Google search volume.
+     * Last full month's English Wikipedia page views (see WikipediaViewsJob).
      * This is the value players are comparing — kept as a raw long
      * to avoid any floating-point ambiguity during comparison logic.
      */
-    @NotNull(message = "Search volume is required")
-    @Min(value = 0, message = "Search volume cannot be negative")
-    @Column(name = "search_volume", nullable = false)
-    private Long searchVolume;
+    @NotNull(message = "Monthly views are required")
+    @Min(value = 0, message = "Monthly views cannot be negative")
+    @Column(name = "monthly_views", nullable = false)
+    private Long monthlyViews;
+
+    /** When {@code monthlyViews} was last fetched from Wikipedia; null = never (seed value). */
+    @Column(name = "views_refreshed_at")
+    private LocalDateTime viewsRefreshedAt;
 
     /**
      * Optional grouping category (e.g. "Food & Drink", "Sports", "Tech").
