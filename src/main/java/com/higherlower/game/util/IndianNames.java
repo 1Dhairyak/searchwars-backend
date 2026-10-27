@@ -1,6 +1,7 @@
 package com.higherlower.game.util;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -37,14 +38,19 @@ public final class IndianNames {
         "Amandeep Singh", "Navjot Randhawa", "Ravneet Kaur", "Harjeet Gill", "Kuldeep Sandhu",
         "Parminder Dhillon", "Baljit Grewal", "Jasleen Kaur", "Gurleen Bedi", "Tejinder Bains",
         "Arshdeep Toor", "Inderjit Chahal", "Sukhmani Kaur", "Rajveer Brar", "Kirandeep Virk",
-        "Mandeep Sekhon", "Harleen Kaur", "Jagmeet Saini", "Noor Kaur", "Gurvinder Mann",
-        // Christian
+        "Mandeep Sekhon", "Harleen Kaur", "Jagmeet Saini", "Noor Kaur", "Gurvinder Mann"
+    );
+
+    /**
+     * Removed from the pool (Christian, Parsi, Northeast). Leaderboard rows still
+     * carrying one of these as a random name are renamed at startup — see AnonymousNameBackfill.
+     */
+    public static final Set<String> RETIRED = Set.of(
         "Joseph D'Souza", "Maria Fernandes", "Anthony Pereira", "Priya D'Costa", "Ryan Rodrigues",
         "Sharon Thomas", "Jacob Mathew", "Teresa Gomes", "Kevin Pinto", "Neha Lobo",
         "Vincent Dias", "Angela Coutinho", "George Kurian", "Elizabeth Varghese", "Samuel Joseph",
         "Rebecca Abraham", "Francis Noronha", "Clara Saldanha", "Thomas Chacko", "Divya George",
         "Allen Cherian", "Grace Philip", "Melvin Monteiro", "Shirley Mascarenhas", "Daniel Kuruvilla",
-        // Parsi / other
         "Cyrus Daruwala", "Zubin Irani", "Tanaz Wadia", "Farokh Contractor", "Dinaz Bharucha",
         "Tenzin Dolma", "Lalremruati Pachuau", "Karma Bhutia", "Mary Sangma", "Pema Wangchuk"
     );
