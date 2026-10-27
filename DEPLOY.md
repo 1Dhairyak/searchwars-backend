@@ -12,7 +12,8 @@ Spring Boot 3 + PostgreSQL | Render (free web service) + Neon (free Postgres)
    ```
    jdbc:postgresql://<host>/<database>?sslmode=require
    ```
-Tables are created automatically on first boot and `DataSeeder` loads the game items.
+On first boot Flyway creates the schema (`src/main/resources/db/migration`), `DataSeeder` loads the game items,
+and `WikipediaViewsJob` replaces their starting numbers with last month's real Wikipedia views.
 
 ## 2. Backend — Render
 

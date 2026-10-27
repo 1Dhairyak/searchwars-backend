@@ -1,99 +1,100 @@
-# Higher or Lower Game — Backend
+# SearchWars — Backend
 
-Enterprise-grade Spring Boot backend for the Higher or Lower web game.  
-Players compare two items and guess which has more monthly Google search volume.
+[![CI](https://github.com/1Dhairyak/searchwars-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/1Dhairyak/searchwars-backend/actions/workflows/ci.yml)
 
----
+Spring Boot API for **[SearchWars](https://search-wars.vercel.app)**: two things side by side, guess which one got
+more English Wikipedia page views last month. One wrong guess ends your streak.
 
-## Tech Stack
+Frontend: [1Dhairyak/SearchWars](https://github.com/1Dhairyak/SearchWars) (React 19 + Vite on Vercel).
 
-| Layer        | Technology                          |
-|--------------|-------------------------------------|
-| Runtime      | Java 21                             |
-| Framework    | Spring Boot 3.3                     |
-| Database     | PostgreSQL 15+                      |
-| ORM          | Spring Data JPA / Hibernate         |
-| Mapping      | Hand-rolled mapper (ItemMapper)     |
-| Caching      | Spring Cache (simple / Redis-ready) |
-| Validation   | Jakarta Bean Validation             |
-| Build        | Maven                               |
-| Testing      | JUnit 5 + Mockito + MockMvc         |
+## Architecture
 
----
+```mermaid
+flowchart LR
+    U[Player's browser] -->|React SPA| V[Vercel CDN]
+    U -->|REST + JWT| R[Spring Boot API<br/>Render, Docker]
+    U -.->|Sign in with Google| G[Google Identity]
+    R -->|verify ID token| G
+    R -->|JPA + Flyway| N[(PostgreSQL<br/>Neon)]
+    J[WikipediaViewsJob<br/>nightly + on startup] -->|pageviews| W[Wikimedia REST API]
+    J --> N
+    GH[GitHub Actions CI] -->|green checks gate| R
+```
 
-## Project Structure
+## What's interesting here
+
+**The server owns the game.** The browser never sees the hidden number before it guesses: `/game/start` returns the
+challenge item without `monthlyViews`, the session (seen items, score) lives in PostgreSQL, and `/game/guess` decides
+right or wrong. Scores — and the leaderboard and "best score" built from them — can't be faked from the client.
+
+**Real data, refreshed automatically.** [`WikipediaViewsJob`](src/main/java/com/higherlower/game/service/WikipediaViewsJob.java)
+pulls last month's views for every item from the [Wikimedia Pageviews API](https://wikimedia.org/api/rest_v1/)
+nightly at 03:00 UTC, and again on startup when the data is over 20 hours old (Render's free tier sleeps, so a
+cron alone would miss most nights).
+- Each item is updated independently; one bad article never blocks the rest, and a failed item keeps its last value.
+- Rate limits, 5xx and network errors retry with exponential backoff (3 attempts).
+- The API counts the exact article only and doesn't follow redirects, so
+  [`WikiArticles`](src/main/java/com/higherlower/game/util/WikiArticles.java) maps ambiguous titles to canonical
+  articles ("Apple" → "Apple Inc.", "Twitter" → "X (social network)"), each checked against Wikipedia.
+
+**Schema changes are migrations.** [Flyway](src/main/resources/db/migration) owns the schema and Hibernate only
+`validate`s it at startup. Production predates Flyway, so it was adopted with `baseline-on-migrate` at V1; CI replays
+exactly that upgrade on a real PostgreSQL before every deploy.
+
+| Version | Change |
+|---|---|
+| V1 | Baseline: the schema as it existed in production |
+| V2 | `search_volume` → `monthly_views` (Wikipedia data), add `views_refreshed_at` |
+| V3 | Data fix: "McDonald s" → "McDonald's" |
+
+**Identity without forcing sign-up.** Every device gets a random guest token. Sessions and the unique player name
+belong to an *owner* — `g:<sha256(token)>` for guests (the raw token is never stored) or `u:<userId>` after login.
+Signing in (email + BCrypt, or Google ID token) adopts the device's guest games and name, so your best score follows
+you across devices.
+
+**Shipping is gated.** GitHub Actions runs the test suite and a PostgreSQL upgrade job on every push and PR;
+Render deploys `main` only after both pass.
+
+## API
+
+All game endpoints return `{ success, message, data }`.
+
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/game/start` | New session: known item (with views) + challenge item (views hidden) |
+| `POST` | `/api/game/guess` | `HIGHER`/`LOWER` → correct?, revealed views, next round or game over |
+| `GET` | `/api/leaderboard?limit=10` | Top scores (cached, evicted on new entries) |
+| `POST` | `/api/players/name` | Claim a globally unique name (case-insensitive) for this device/account |
+| `GET` | `/api/players/best` | Signed-in user's best score across devices |
+| `POST` | `/api/auth/register` · `/login` · `/google` | Returns a JWT; adopts the guest's games |
+
+Ties go to the player: guessing `HIGHER` on equal views counts as correct.
+
+## Stack
+
+Java 21 · Spring Boot 3.3 (Web, Data JPA, Security, Validation, Cache, Actuator) · PostgreSQL 16 (Neon) · Flyway ·
+JJWT · Google API Client · JUnit 5, Mockito, MockMvc, MockRestServiceServer, H2 · Docker · GitHub Actions · Render
+
+## Run locally
+
+```bash
+docker run -d --name searchwars-db -e POSTGRES_DB=higher_lower_db -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
+mvn spring-boot:run      # http://localhost:8080 — Flyway creates the schema, DataSeeder adds 100 items,
+                         # then the Wikipedia job fills in real views
+mvn verify               # tests (H2; Flyway builds the schema and Hibernate validates it)
+```
+
+## Project layout
 
 ```
 src/main/java/com/higherlower/game/
-├── HigherLowerGameApplication.java   # Boot entry point
-│
-├── config/
-│   ├── WebConfig.java                # CORS configuration
-│   └── DataSeeder.java               # Dev seed data (non-prod only)
-│
-├── controller/
-│   ├── GameController.java           # GET /api/game/start, POST /api/game/guess
-│   └── LeaderboardController.java    # GET /api/leaderboard
-│
-├── service/
-│   ├── GameService.java              # Interface
-│   ├── LeaderboardService.java       # Interface
-│   └── impl/
-│       ├── GameServiceImpl.java      # Core game loop logic
-│       └── LeaderboardServiceImpl.java
-│
-├── repository/
-│   ├── ItemRepository.java
-│   ├── GameSessionRepository.java
-│   └── LeaderboardRepository.java
-│
-├── entity/
-│   ├── Item.java                     # Game item (title, searchVolume, …)
-│   ├── GameSession.java              # Per-player session state
-│   ├── LeaderboardEntry.java         # Immutable score record
-│   └── enums/
-│       ├── GameStatus.java           # ACTIVE | GAME_OVER | ABANDONED
-│       └── GuessType.java            # HIGHER | LOWER
-│
-├── dto/
-│   ├── request/
-│   │   ├── StartGameRequest.java
-│   │   └── GuessRequest.java
-│   └── response/
-│       ├── ApiResponse.java          # Generic envelope { success, message, data }
-│       ├── ItemDto.java
-│       ├── GameRoundDto.java
-│       ├── GuessResultDto.java
-│       └── LeaderboardDto.java
-│
-├── exception/
-│   ├── GameSessionNotFoundException.java
-│   ├── InsufficientItemsException.java
-│   ├── InvalidGuessException.java
-│   └── GlobalExceptionHandler.java   # @RestControllerAdvice
-│
-└── util/
-    └── ItemMapper.java               # Entity ↔ DTO conversion
+  controller/   Game, Leaderboard, Player, Auth REST endpoints
+  service/      game loop, leaderboard, player names, WikipediaViewsClient + WikipediaViewsJob
+  repository/   Spring Data JPA (random item selection, best score, owner reassignment)
+  entity/       Item, GameSession, LeaderboardEntry, PlayerName, User
+  config/       security (stateless JWT filter), seed data, name backfill
+src/main/resources/db/migration/   Flyway SQL migrations
+.github/workflows/ci.yml           tests + PostgreSQL upgrade job
 ```
 
----
-
-## Quick Start
-
-## Game Logic
-
-### Duplicate Prevention
-Each `GameSession` maintains a `seenItemIds` list (comma-delimited IDs).  
-The repository queries for random items **excluding all seen IDs**, so an item can never appear twice in the same session.
-
-### Tie-Breaking
-When both items have identical search volumes, a `HIGHER` guess is treated as **correct** (player-friendly design).
-
-### Session Lifecycle
-```
-[New Request] → ACTIVE → (correct guesses) → ACTIVE
-                       → (wrong guess)     → GAME_OVER → [Leaderboard Entry Written]
-```
-
----
-
+Deployment (Render + Neon) is in [DEPLOY.md](DEPLOY.md).
