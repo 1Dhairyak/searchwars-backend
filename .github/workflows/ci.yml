@@ -20,9 +20,10 @@ jobs:
 
   postgres-upgrade:
     # Production's database predates Flyway. This recreates that state on a real
-    # PostgreSQL (V1 schema, no history table), boots the production jar, and checks
-    # Flyway baselines it, applies the newer migrations and Hibernate validates.
-    name: Migrations on PostgreSQL
+    # PostgreSQL (V1 schema, no history table), boots the production Docker image —
+    # exactly what Render runs, CDS archive included — and checks Flyway baselines it,
+    # applies the newer migrations and Hibernate validates.
+    name: Docker image + migrations on PostgreSQL
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -42,11 +43,6 @@ jobs:
       GOOGLE_CLIENT_ID: ci
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
 
       - name: Create the pre-Flyway schema, as production had it
         run: |
@@ -55,13 +51,14 @@ jobs:
             "insert into items (id, title, image_url, search_volume, category, active) values
                ('legacy-1', 'McDonald s', 'x', 1, 'Food', true), ('legacy-2', 'Naruto', 'x', 2, 'Anime', true)"
 
-      - run: mvn -B -DskipTests package
+      - run: docker build -t searchwars-api .
 
-      - name: Boot the production jar and play one round
+      - name: Boot the production image and play one round
         run: |
-          java -Dspring.profiles.active=prod -jar target/higher-lower-game-1.0.0.jar --wiki.refresh.enabled=false > app.log 2>&1 &
+          docker run -d --name api --network host -e DB_URL -e DB_USERNAME -e DB_PASSWORD -e JWT_SECRET -e GOOGLE_CLIENT_ID             searchwars-api --wiki.refresh.enabled=false
           for i in $(seq 1 60); do curl -sf localhost:8080/actuator/health && break; sleep 2; done
           curl -sf -X POST localhost:8080/api/game/start -H 'Content-Type: application/json' -d '{}' | grep -q sessionId
+          docker logs api 2>&1 | grep 'Started HigherLowerGameApplication'
 
       - name: Check migrations ran against the baselined schema
         run: |
@@ -70,4 +67,4 @@ jobs:
 
       - name: App log
         if: always()
-        run: cat app.log
+        run: docker logs api
